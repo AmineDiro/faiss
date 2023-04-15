@@ -10,6 +10,7 @@ set(FAISS_GPU_SRC
   GpuDistance.cu
   GpuIcmEncoder.cu
   GpuIndex.cu
+  GpuIndexBinaryIVF.cu
   GpuIndexBinaryFlat.cu
   GpuIndexFlat.cu
   GpuIndexIVF.cu
@@ -86,6 +87,7 @@ set(FAISS_GPU_HEADERS
   GpuFaissAssert.h
   GpuIndex.h
   GpuIndexBinaryFlat.h
+  GpuIndexBinaryIVF.h
   GpuIndexFlat.h
   GpuIndexIVF.h
   GpuIndexIVFFlat.h
