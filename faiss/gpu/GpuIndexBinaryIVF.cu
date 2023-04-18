@@ -22,7 +22,7 @@ constexpr size_t kMinPageSize = (size_t)256 * 1024 * 1024;
 
 GpuIndexBinaryIVF::GpuIndexBinaryIVF(
         GpuResourcesProvider* provider,
-        IndexBinary* coarseQuantizer,
+        IndexBinary* quantizer,
         size_t dims,
         idx_t nlist,
         GpuIndexBinaryIVFConfig config)
@@ -35,11 +35,14 @@ GpuIndexBinaryIVF::GpuIndexBinaryIVF(
     FAISS_THROW_IF_NOT_MSG(
             quantizer, "expecting a coarse quantizer object; none provided");
 
+    FAISS_THROW_IF_NOT(d == quantizer->d);
     FAISS_THROW_IF_NOT_FMT(
             this->d % 8 == 0,
             "vector dimension (number of bits) "
             "must be divisible by 8 (passed %d)",
             this->d);
+
+    is_trained = quantizer->is_trained && (quantizer->ntotal == nlist);
 }
 
 GpuIndexBinaryIVF::~GpuIndexBinaryIVF() {}

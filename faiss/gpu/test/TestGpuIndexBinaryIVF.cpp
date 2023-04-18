@@ -4,8 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-#include <faiss/IndexBinaryFlat.h>
+#include <faiss/gpu/GpuIndexBinaryFlat.h>
 #include <faiss/gpu/GpuIndexBinaryIVF.h>
 #include <faiss/gpu/StandardGpuResources.h>
 #include <faiss/gpu/impl/IndexUtils.h>
@@ -70,23 +69,26 @@ void testGpuIndexBinaryIVF(int kOverride = -1) {
     faiss::gpu::GpuIndexBinaryIVFConfig config;
     config.device = faiss::gpu::randVal(0, faiss::gpu::getNumDevices() - 1);
 
-    // multiples of 8 and multiples of 32 use different implementations
-    faiss::IndexBinary* quantizer;
+    size_t nlist = 1;
 
+    // multiples of 8 and multiples of 32 use different implementations
     int dims = faiss::gpu::randVal(1, 20) * DimMultiple;
 
-    faiss::gpu::GpuIndexBinaryIVF gpuIndex(&res, dims);
+    faiss::gpu::GpuIndexBinaryFlat quantizer(&res,dims);
+    faiss::gpu::GpuIndexBinaryIVF gpuIndex(
+            &res, &quantizer, dims, nlist, config);
 
     // faiss::IndexBinaryFlat cpuIndex(dims);
 
-    // int k = kOverride > 0
-    //         ? kOverride
-    //         : faiss::gpu::randVal(1, faiss::gpu::getMaxKSelection());
-    // int numVecs = faiss::gpu::randVal(k + 1, 20000);
-    // int numQuery = faiss::gpu::randVal(1, 1000);
+    int k = kOverride > 0
+            ? kOverride
+            : faiss::gpu::randVal(1, faiss::gpu::getMaxKSelection());
+    int numVecs = faiss::gpu::randVal(k + 1, 20000);
+    int numQuery = faiss::gpu::randVal(1, 1000);
 
-    // auto data = faiss::gpu::randBinaryVecs(numVecs, dims);
-    // gpuIndex.add(numVecs, data.data());
+    auto data = faiss::gpu::randBinaryVecs(numVecs, dims);
+    gpuIndex.add(numVecs, data.data());
+
     // cpuIndex.add(numVecs, data.data());
 
     // auto query = faiss::gpu::randBinaryVecs(numQuery, dims);
@@ -117,7 +119,6 @@ TEST(testGpuIndexBinaryIVF, Test32) {
         testGpuIndexBinaryIVF<32>();
     }
 }
-
 
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
